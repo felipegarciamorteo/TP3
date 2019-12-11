@@ -16,11 +16,11 @@ class Grafo():
         self.vertices.clear()
 
     def agregar_vertice(self,vertice):
-        if self.vertices.has_key(vertice):
+        if not self.vertices.__contains__(vertice):
             self.vertices[vertice] = {}
 
     def eliminar_vertice(self,vertice):
-        if not self.vertices.has_key(vertice): return None
+        if not self.vertices.__contains__(vertice): return None
         if self.tipo == no_dirigido:
             for i in self.vertices[vertice].keys():
                 self.vertices[i].pop(vertice)
@@ -40,10 +40,10 @@ class Grafo():
         return random.choice(self.vertices)
 
     def pertenece(self,vertice):
-        return self.vertices.has_key(vertice)
+        return self.vertices.__contains__(vertice)
 
     def peso(self,origen,destino):
-        if not self.vertices[origen].has_key(destino): return None
+        if not self.vertices[origen].__contains__(destino): return None
         return self.vertices[origen][destino]
 
     def adyacentes(self,vertice):
