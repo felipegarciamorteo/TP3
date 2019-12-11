@@ -42,7 +42,7 @@ class Grafo():
     def pertenece(self,vertice):
         return self.vertices.has_key(vertice)
 
-    def peso_arista(self,origen,destino):
+    def peso(self,origen,destino):
         if not self.vertices[origen].has_key(destino): return None
         return self.vertices[origen][destino]
 
