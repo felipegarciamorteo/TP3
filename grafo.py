@@ -37,7 +37,7 @@ class Grafo():
         return self.vertices[origen].pop(destino)
 
     def vertice_random(self):
-        return
+        return random.choice(self.vertices)
 
     def pertenece(self,vertice):
         return self.vertices.has_key(vertice)
@@ -47,11 +47,11 @@ class Grafo():
         return self.vertices[origen][destino]
 
     def adyacentes(self,vertice):
-        return self.vertices[vertice].items()
         """ady = []
         for i in self.vertices[vertice].keys:
             ady.append(i)
         return ady """
+        return self.vertices[vertice].items()
 
     def iterar(self):
         #Puede que no vaya aca, nose.
