@@ -153,6 +153,30 @@ def prim_flycombi(grafo,vertice = None):
             if x not in visitados:
                 heapq.heappush(heap,(w,x,grafo.peso(w,x).tiempo))
     return arbol,costo
+#recorrido n
 
+def recorrido_n(grafo, n, origen):
+    visitados = set()
+    padre = {}
+    orden = {}
+    cont = 0
+    return n_recursivo(grafo,origen ,visitados ,padre ,orden, cont, n, origen)
+    
+
+def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
+    vis.add(v)
+    for w in grafo.adyacentes(v):
+        if (w not in vis and cont<n) or (cont == n  and  w  == origen):
+            padre[w] = v
+            orden[w] = orden[v] + 1
+            cont = cont + 1
+            if  w != origen:
+                n_recursivo(grafo,w,vis,padre,orden,cont, n, origen)
+            else 
+                return padre, orden 
+    del padre[v]
+    del orden[v]
+    vis.remove[v]
+    
 def kruskal(grafo):
     return 
