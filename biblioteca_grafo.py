@@ -1,28 +1,60 @@
 #encoding: utf-8(para las ñ)
-import grafo
+from grafo import Grafo
 import heapq
 from collections import deque
 
 '''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
-
+class Peso():
+    def __init__(self,tiempo,precio,cantidad):
+        self.tiempo = tiempo
+        self.precio = precio
+        self.cantidad = cantidad
+    
 #camino_mas rapido/barato
 def dijkstra(grafo,origen): 
     padre = {}
     dist = {}
-    for i in grafo:
+    for i in grafo.vertices:
         dist[i] = float('inf')
     padre[origen] = None
     dist[origen] = 0
     heap = [(0,origen)]
     while len(heap) > 0:
-        v = heapq.heappop(heap)
+        desencolado = heapq.heappop(heap)
+        v = desencolado[1]
         for w in grafo.adyacentes(v):
-            if (dist[v]+grafo.peso(v,w)) < dist[w]:
+            if dist[v]+grafo.peso(v,w) < dist[w]:
                 dist[w] = dist[v] + grafo.peso(v,w)
                 padre[w] = v
                 heapq.heappush(heap,(dist[w],w))
     return padre,dist
 
+def dijkstra_flycombi(grafo,origen,destino,tipo,ciudades):
+    padre = {}
+    dist = {}
+    for i in grafo.vertices:
+        dist[i] = float('inf')
+    padre[origen] = None
+    dist[origen] = 0
+    heap = [(0,origen)]
+    while len(heap) > 0:
+        desencolado = heapq.heappop(heap)
+        v = desencolado[1]
+
+        if v in ciudades[destino]:
+            return v,padre,dist[v]
+        for w in grafo.adyacentes(v):
+            #print("ciudad:",w)
+            if tipo == "tiempo":
+                p = int(grafo.peso(v,w).tiempo)
+            elif tipo == "precio":
+                p =  int(grafo.peso(v,w).precio)
+            #print(distv,"de ")
+            if dist[v] + p < dist[w]:
+                dist[w] = dist[v] + p
+                padre[w] = v
+                heapq.heappush(heap,(dist[w],w))
+    return padre,dist
 
 
 #camino_escalas
@@ -100,6 +132,27 @@ def prim(grafo):
             if x not in visitados:
                 heapq.heappush(heap,(w,x,grafo.peso(w,x)))
     return arbol
+
+def prim_flycombi(grafo,vertice = None):
+    if vertice == None:
+        vertice = grafo.vertice_random()
+    costo = 0
+    visitados = set()
+    visitados.add(vertice)
+    heap = []
+    for w in grafo.adyacentes(vertice):
+        heapq.heappush(heap,(vertice,w,grafo.peso(vertice,w).tiempo))
+    arbol = vertice
+    while len(heap) > 0:
+        v,w,p = heapq.heappop(heap)
+        if w in visitados: continue
+        arbol += "->"+w
+        costo += int(p)
+        visitados.add(w)
+        for x in grafo.adyacentes(w):
+            if x not in visitados:
+                heapq.heappush(heap,(w,x,grafo.peso(w,x).tiempo))
+    return arbol,costo
 
 def kruskal(grafo):
     return 

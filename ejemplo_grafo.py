@@ -1,4 +1,5 @@
 from grafo import Grafo
+import biblioteca_grafo
 
 ej = Grafo()
 
@@ -14,12 +15,26 @@ ej.agregar_vertice('r')
 ej.agregar_arista('a','c',2)
 ej.agregar_arista('f','r',7)
 ej.agregar_arista('f','h',3)
-ej.agregar_arista('a','f')
+ej.agregar_arista('a','f',4)
+ej.agregar_arista('c','r',5)
+
+padres,dist = biblioteca_grafo.dijkstra(ej,'a')
+print("DIJKSTRA\n")
+print(padres)
+print(dist)
+
+p,d = biblioteca_grafo.dijkstra_final(ej,'a','r')
+print("DIJKSTRA CON DESTINO")
+print(p)
+print(d)
+
 
 for v in ej.vertices:
     print (v,", sus adyacentes:")
     for w in ej.adyacentes(v,0):
         print ('\t',w)
+
+
 
 print ("vertice aleatorio:",ej.vertice_random())
 
