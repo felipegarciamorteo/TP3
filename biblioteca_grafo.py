@@ -176,6 +176,7 @@ def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
                 return padre, orden 
     del padre[v]
     del orden[v]
+    cont = cont -1
     vis.remove[v]
     
 def kruskal(grafo):
