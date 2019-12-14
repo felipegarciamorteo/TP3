@@ -11,6 +11,13 @@ no_dirigido = 1
 ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
 '''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
 
+def imprimir_resultado(res):
+    resultado = res.pop(len(res)-1)
+    while len(res) > 0:
+        resultado += "->" + res.pop(len(res)-1)
+    print(resultado)
+
+
 def camino_mas(parametros,flycombi):
     if len(parametros) != 3 or parametros[1] not in ciudades or parametros[2] not in ciudades: return False 
     #print(parametros[0])
@@ -60,6 +67,9 @@ def camino_escalas(parametros,flycombi):
     return
 
 def centralidad(parametros,flycombi):
+    if len(parametros) != 1 or not parametros[0].isnumeric(): return False
+
+
     return
 
 def centralidad_aprox(parametros,flycombi):
@@ -72,32 +82,18 @@ def nueva_aerolinea(parametros,flycombi):
     return 
 
 def viaje_valido(viaje,flycombi,visitados):
-    #for i in ciudades:
-     #   if i not in visitados: return False
-    '''for j in range(0,len(viaje)):
-        if viaje[j+1] not in flycombi.adyacentes[j]: return False'''
+    estuvo = False
+    for i in ciudades:
+        for j in ciudades[i]:
+            if j in visitados: 
+                estuvo = True
+        if not estuvo: return False
+        estuvo = False
     return True
 
-'''def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
-    #print (len(ciudades),len(visitados))
-    if len(ciudades) == len(visitados):
-        #print("entro")
-        if viaje_valido(res,flycombi,visitados):
-            #print("es valido")
-            return res,costo 
-        return False
-    for w in flycombi.adyacentes(v):
-        if flycombi.dato(w,'ciudad') in visitados: continue
-        visitados.add(flycombi.dato(w,'ciudad'))
-        costo += int(flycombi.peso(v,w).tiempo)
-        #print(w)
-        res += "->"+w
-        #print(res)
-        res,costo = recorrer_mundo_bt(w,flycombi,visitados,res,costo)
-        #print(flycombi.dato(w,'ciudad'))
-    return res,costo'''
 
-def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
+
+'''def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
     visitados.add(flycombi.dato(v,'ciudad'))
     heap = []
     for w in flycombi.adyacentes(v):
@@ -106,7 +102,8 @@ def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
         peso,orig,dest = heapq.heappop(heap)
         if flycombi.dato(dest,'ciudad') in visitados: continue
         visitados.add(flycombi.dato(w,'ciudad'))
-        costo += int(peso)
+        costo += intAR
+(peso)
         #print(w)
         res += "->"+w
         #print(res)
@@ -115,14 +112,39 @@ def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
             if flycombi.dato(x,'ciudad') not in visitados:
                 heapq.heappush(heap,(flycombi.peso(w,x).tiempo,w,x))
         #print(flycombi.dato(w,'ciudad'))
-    return res,costo
+    return res,costo'''
 
+def recorrer_mundo_bt(v,flycombi,visitados,camino_act,costo):
+    #print (len(ciudades),len(visitados))
+    visitados.add(v)
+    if len(ciudades) == len(visitados):
+        #print("entro")
+        if viaje_valido(camino_act,flycombi,visitados):
+            #print("es valido")
+            return res,costo 
+        else: 
+            visitados.remove()
+            return None
+    for w in flycombi.adyacentes(v):
+        #if flycombi.dato(w,'ciudad') in visitados: continue
+        costo += int(flycombi.peso(v,w).tiempo)
+        #print(w)
+        #print(res)
+        res,costo = recorrer_mundo_bt(w,flycombi,visitados,camino_act+[w],costo)
+        if res is not None:
+            return res,costo
+        #print(flycombi.dato(w,'ciudad'))
+    visitados.remove()
+    return None
+
+def es_conexo(grafo):
+    padre,orden = biblioteca_grafo.bfs(grafo,grafo.vertice_random())
+    return len(padre) == len(grafo.vertices)
 
 def recorrer_mundo(parametros,flycombi):#back_tracking
-    if len(parametros) != 1 or parametros[0] not in ciudades: return False
-
+    if len(parametros) != 1 or parametros[0] not in ciudades or not es_conexo(flycombi): return False
     min = float('inf')
-    for v in ciudades[parametros[0]]:
+    '''for v in ciudades[parametros[0]]:
         res,costo = biblioteca_grafo.prim_flycombi(flycombi,v)
         if min > costo:
             min = costo
@@ -130,31 +152,54 @@ def recorrer_mundo(parametros,flycombi):#back_tracking
             orig = v      
     print (sol)
         
-    print(costo)
-    '''visitados = set()
+    print(costo)'''
     #while len(visitados) != len(ciudades):
-    
-    for v in ciudades[parametros[0]]:
-        res = v
-        recorrido,tardo = recorrer_mundo_bt(v,flycombi,visitados,res,0)
+    resultado = None
+    for origen in ciudades[parametros[0]]:
+        recorrido,tardo = recorrer_mundo_bt(origen,flycombi,set(),[v],0)
         if min > tardo:
             min = tardo
             resultado = recorrido
-    if not resultado: return False#recorrido'''
+    if resultado is None: return False#recorrido'''
     '''resultado = res.pop(len(res)-1)
     while len(res) > 0:
-        resultado += "->" + res.pop(len(res)-1)
-
-    print(resultado)'''
-    '''print(resultado)
-    print(tardo)'''
+        resultado += "->" + res.pop(len(res)-1)'''
+    
+    imprimir_resultado(res)
+    '''print(resultado)'''
+    print(tardo)
     return True
 
 def recorrer_mundo_aprox(parametros,flycombi):
     return
 
+
+def ciclo_n(grafo,v,origen,n,vis,camino_actual):
+    vis.add(v)
+    if len(camino_actual) == n:
+        if origen in grafo.adyacentes(v):
+            return camino_actual
+        else:
+            vis.remove(v)
+            return None 
+    for w in grafo.adyacentes(v):
+        if w in vis: continue
+        solucion = ciclo_n(grafo,w,origen,n,vis,camino_actual+[w])
+        if solucion is not None:
+            return solucion
+    vis.remove(v)
+    return None
+
 def vacaciones(parametros,flycombi):
-    return 
+    if len(parametros) != 2 or parametros[0] not in ciudades or not parametros[1].isnumeric() : return False
+
+    for origen in ciudades[parametros[0]]:
+        resultado = ciclo_n(flycombi,origen,origen,int(parametros[1]),set(),[origen])
+        if resultado is not None:
+            imprimir_resultado(resultado+[origen])
+            return True
+
+    return False
 
 def itinerario(parametros,flycombi):
     return 
@@ -165,14 +210,15 @@ def exportar_kml(parametros,flycombi):
 
 
 def identificar_operacion(comando,flycombi):
-    print("hola")
     if len(comando) > 1:
         parametros = comando[1].split(",")
     elif comando[0] != "listar_operaciones": return False
 
     print(comando[0])
     if comando[0] == "listar_operaciones":
-        listar_operaciones()
+        print("camino_mas")#listar_operaciones()
+        print("recorrer_mundo")
+        print("vacaciones")
     elif comando[0] == "camino_mas":
         print("entro a identificar")
         if not camino_mas(parametros,flycombi): return False

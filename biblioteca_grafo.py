@@ -99,6 +99,27 @@ def dfs(grafo):
 
 def centralidad(grafo):
     cent = {}
+    for v in grafo: cent[v] = 0
+    for v in grafo:
+        # hacia todos los demas vertices
+        distancia, padre = dijkstra(grafo, v)
+        cent_aux = {}
+        for w in grafo: cent_aux[w] = 0
+        # Aca filtramos (de ser necesario) los vertices a distancia infinita, 
+        # y ordenamos de mayor a menor
+        vertices_ordenados = ordenar_vertices(grafo, distancias) 
+        for w in vertices_ordenados:
+            cent_aux[padre[w]] += 1 + cent_aux[w]
+        # le sumamos 1 a la centralidad de todos los vertices que se encuentren en 
+        # el medio del camino
+        for w in grafo:
+            if w == v: continue
+            cent[w] += cent_aux[w]
+    return cent
+
+
+def centralidad_aprox(grafo):
+    cent = {}
     for v in grafo:
         cent[v] = 0
     for v in grafo:
@@ -172,7 +193,7 @@ def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
             cont = cont + 1
             if  w != origen:
                 n_recursivo(grafo,w,vis,padre,orden,cont, n, origen)
-            else 
+            else: 
                 return padre, orden 
     del padre[v]
     del orden[v]
