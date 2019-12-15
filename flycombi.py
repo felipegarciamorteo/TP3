@@ -64,6 +64,26 @@ def camino_mas(parametros,flycombi):
     return True
 
 def camino_escalas(parametros,flycombi):
+    if len(parametros) != 2 or parametros[0] not in ciudades or parametros[1] not in ciudades: return False 
+    min = float('inf')
+    for aerop in ciudades[parametros[0]]:
+            padre, orden = biblioteca_grafo.bfs(flycombi,aerop)
+            for aerop1 in ciudades[parametros[1]]:
+                if orden[aerop1] < min:
+                    min = orden
+                    camino_final = padre
+                    aerop_final = aerop1
+    if min == float('inf'): return False
+
+    
+    anterior = camino_final[aerop_final]
+    resultado = anterior+"->"+ str(aerop_final)
+    while camino_final[anterior] != None:
+        anterior = camino_final[anterior]
+        resultado = str(anterior)+"->"+resultado
+    
+    print(resultado)
+    return True
     return
 
 def centralidad(parametros,flycombi):
