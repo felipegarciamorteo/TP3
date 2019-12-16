@@ -6,6 +6,7 @@ import heapq
 import csv
 from collections import deque
 import fileinput
+import operator
 
 no_dirigido = 1
 ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
@@ -20,17 +21,14 @@ def imprimir_resultado(res):
 
 def camino_mas(parametros,flycombi):
     if len(parametros) != 3 or parametros[1] not in ciudades or parametros[2] not in ciudades: return False 
-    #print(parametros[0])
     if parametros[0] == "rapido":
         peso = "tiempo"
     elif parametros[0] == "barato":
         peso = "precio"
     else: return False
-    #camino = biblioteca_grafo.dijkstra_flycombi(flycombi,parametros[1],parametros[2],"precio",ciudades)
     min = float('inf')
     
     for aerop in ciudades[parametros[1]]:
-            #print("oka,avanzamos")
             dest,camino,costo = biblioteca_grafo.dijkstra_flycombi(flycombi,aerop,parametros[2],peso,ciudades)
             if costo < min:
                 min = costo
@@ -84,13 +82,42 @@ def camino_escalas(parametros,flycombi):
     
     print(resultado)
     return True
-    return
+    #return
+
 
 def centralidad(parametros,flycombi):
-    if len(parametros) != 1 or not parametros[0].isnumeric(): return False
+    if len(parametros) != 1 or not parametros[0].isnumeric() or int(parametros[0]) <= 0 or int(parametros[0]) > len(flycombi.vertices) : return False
+    
+    cent = {}
+    for v in flycombi.vertices: cent[v] = 0
+    for v in flycombi.vertices:
+        # hacia todos los demas vertices
+        padre, distancia = biblioteca_grafo.dijkstra_flycombi(flycombi,v,None,"frecuencia",ciudades)
+        cent_aux = {}
+        for w in flycombi.vertices: cent_aux[w] = 0
+        # Aca filtramos (de ser necesario) los vertices a distancia infinita, 
+        # y ordenamos de mayor a menor
+        
+        vertices_ordenados = sorted(distancia.items(),key=operator.itemgetter(1),reverse = True)# biblioteca_grafo.bubbleSort(flycombi, distancias) 
+        for w in vertices_ordenados:
+            if w == float('inf') or padre[w[0]] is None: continue
+            cent_aux[padre[w[0]]] += 1 + cent_aux[w[0]]
+        # le sumamos 1 a la centralidad de todos los vertices que se encuentren en 
+        # el medio del camino
+        for w in flycombi.vertices:
+            if w == v: continue
+            cent[w] += cent_aux[w]
+    
+    res = sorted(cent.items(),key=operator.itemgetter(1))
+    resultado = (res.pop()[0])
+    for i in range(1,int(parametros[0])):
+        desencolado = res.pop()
+        resultado += ", "+desencolado[0]
+    print(resultado)
+    #imprimir_resultado(resultado)
 
+    return True
 
-    return
 
 def centralidad_aprox(parametros,flycombi):
     return 
@@ -101,6 +128,8 @@ def pagerank(parametros,flycombi):
 def nueva_aerolinea(parametros,flycombi):
     return 
 
+
+
 def viaje_valido(viaje,flycombi,visitados):
     estuvo = False
     for i in ciudades:
@@ -110,8 +139,6 @@ def viaje_valido(viaje,flycombi,visitados):
         if not estuvo: return False
         estuvo = False
     return True
-
-
 
 '''def recorrer_mundo_bt(v,flycombi,visitados,res,costo):
     visitados.add(flycombi.dato(v,'ciudad'))
@@ -180,7 +207,7 @@ def recorrer_mundo(parametros,flycombi):#back_tracking
         if min > tardo:
             min = tardo
             resultado = recorrido
-    if resultado is None: return False#recorrido'''
+    if resultado is None: return False #recorrido'''
     '''resultado = res.pop(len(res)-1)
     while len(res) > 0:
         resultado += "->" + res.pop(len(res)-1)'''
@@ -193,28 +220,11 @@ def recorrer_mundo(parametros,flycombi):#back_tracking
 def recorrer_mundo_aprox(parametros,flycombi):
     return
 
-
-def ciclo_n(grafo,v,origen,n,vis,camino_actual):
-    vis.add(v)
-    if len(camino_actual) == n:
-        if origen in grafo.adyacentes(v):
-            return camino_actual
-        else:
-            vis.remove(v)
-            return None 
-    for w in grafo.adyacentes(v):
-        if w in vis: continue
-        solucion = ciclo_n(grafo,w,origen,n,vis,camino_actual+[w])
-        if solucion is not None:
-            return solucion
-    vis.remove(v)
-    return None
-
 def vacaciones(parametros,flycombi):
     if len(parametros) != 2 or parametros[0] not in ciudades or not parametros[1].isnumeric() : return False
 
     for origen in ciudades[parametros[0]]:
-        resultado = ciclo_n(flycombi,origen,origen,int(parametros[1]),set(),[origen])
+        resultado = biblioteca_grafo.ciclo_n(flycombi,origen,origen,int(parametros[1]),set(),[origen])
         if resultado is not None:
             imprimir_resultado(resultado+[origen])
             return True
@@ -236,8 +246,10 @@ def identificar_operacion(comando,flycombi):
 
     print(comando[0])
     if comando[0] == "listar_operaciones":
-        print("camino_mas")#listar_operaciones()
-        print("recorrer_mundo")
+        print("camino_mas")
+        print("camino_escalas")
+        #print("recorrer_mundo")
+        print("centralidad")
         print("vacaciones")
     elif comando[0] == "camino_mas":
         print("entro a identificar")
@@ -266,6 +278,8 @@ def identificar_operacion(comando,flycombi):
         print("esta en el else")
         return False
     return True
+
+
 '''MAIN/APENAS ABRE EL PROGRAMA'''
 
 def main():

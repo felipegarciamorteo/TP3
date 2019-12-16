@@ -4,13 +4,19 @@ import heapq
 from collections import deque
 
 '''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
+
+#-----CLASE PARA DIFERENCIAR EL PESO DE LAS ARISTAS DEL GRAFO SEGÚN LA OPERACIÓN------
+
 class Peso():
     def __init__(self,tiempo,precio,cantidad):
         self.tiempo = tiempo
         self.precio = precio
         self.cantidad = cantidad
     
-#camino_mas rapido/barato
+
+#-----------------CAMINOS MÍNIMOS---------------------
+
+#camino_mas
 def dijkstra(grafo,origen): 
     padre = {}
     dist = {}
@@ -41,14 +47,17 @@ def dijkstra_flycombi(grafo,origen,destino,tipo,ciudades):
         desencolado = heapq.heappop(heap)
         v = desencolado[1]
 
-        if v in ciudades[destino]:
-            return v,padre,dist[v]
+        if destino is not None:
+            if v in ciudades[destino]:
+                return v,padre,dist[v]
         for w in grafo.adyacentes(v):
             #print("ciudad:",w)
             if tipo == "tiempo":
                 p = int(grafo.peso(v,w).tiempo)
             elif tipo == "precio":
                 p =  int(grafo.peso(v,w).precio)
+            elif tipo == "frecuencia":
+                p = 1/int(grafo.peso(v,w).cantidad) 
             #print(distv,"de ")
             if dist[v] + p < dist[w]:
                 dist[w] = dist[v] + p
@@ -77,6 +86,7 @@ def bfs(grafo,origen):
                 orden[w] = orden[v] + 1
     return padre,orden
 
+
 def dfs_recursivo(grafo,v,vis,padre,orden):
     vis.add(v)
     for w in grafo.adyacentes(v):
@@ -84,7 +94,6 @@ def dfs_recursivo(grafo,v,vis,padre,orden):
             padre[w] = v
             orden[w] = orden[v] + 1
             dfs_recursivo(grafo,w,vis,padre,orden)
-
 
 def dfs(grafo):
     visitados = set()
@@ -96,6 +105,9 @@ def dfs(grafo):
             padre[v] = None
             dfs_recursivo(grafo,v,visitados,padre,orden)
     return padre,orden
+
+
+#-------------------CENTRALIDAD-------------------
 
 def centralidad(grafo):
     cent = {}
@@ -134,7 +146,7 @@ def centralidad_aprox(grafo):
                 actual = padre[actual]
     return cent
 
-
+#--------------ARBOLES DE TENDIDO MINIMO--------------------
 
 def prim(grafo):
     vertice = grafo.vertice_random()
@@ -174,6 +186,29 @@ def prim_flycombi(grafo,vertice = None):
             if x not in visitados:
                 heapq.heappush(heap,(w,x,grafo.peso(w,x).tiempo))
     return arbol,costo
+
+def kruskal(grafo):
+    return 
+
+#----------ENCONTRAR UN CICLO CON N VERTICES--------------
+
+def ciclo_n(grafo,v,origen,n,vis,camino_actual):
+    vis.add(v)
+    if len(camino_actual) == n:
+        if origen in grafo.adyacentes(v):
+            return camino_actual
+        else:
+            vis.remove(v)
+            return None 
+    for w in grafo.adyacentes(v):
+        if w in vis: continue
+        solucion = ciclo_n(grafo,w,origen,n,vis,camino_actual+[w])
+        if solucion is not None:
+            return solucion
+    vis.remove(v)
+    return None
+
+    
 #recorrido n
 
 def recorrido_n(grafo, n, origen):
@@ -183,7 +218,6 @@ def recorrido_n(grafo, n, origen):
     cont = 0
     return n_recursivo(grafo,origen ,visitados ,padre ,orden, cont, n, origen)
     
-
 def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
     vis.add(v)
     for w in grafo.adyacentes(v):
@@ -199,5 +233,70 @@ def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
     del orden[v]
     vis.remove[v]
     
-def kruskal(grafo):
-    return 
+
+#----------- ORDENAMIENTOS COMPARATIVOS----------------
+
+# -*- coding: utf-8 -*-
+
+from time import time
+
+def mergeSort(lista):
+    if len(lista) <= 1:
+        return lista
+
+    medio = int(len(lista)) / 2
+    izquierda = lista[:medio]
+    derecha = lista[medio:]
+
+    izquierda = mergeSort(izquierda)
+    derecha = mergeSort(derecha)
+
+    return merge(izquierda, derecha)
+
+def merge(listaA, listaB):
+    global comparaciones
+    lista_nueva = []
+    a = 0
+    b = 0
+
+    while a < len(listaA) and b < len(listaB):
+        comparaciones += 1
+
+        if listaA[a] < listaB[b]:
+            lista_nueva.append(listaA[a])
+            a += 1
+        else:
+            lista_nueva.append(listaB[b])
+            b += 1
+
+    while a < len(listaA):
+        lista_nueva.append(listaA[a])
+        a += 1
+
+    while b < len(listaB):
+        lista_nueva.append(listaB[b])
+        b += 1
+
+    return lista_nueva
+
+def bubbleSort(lista):
+    n = len(lista)
+    for i in range(1, n):
+        for j in range(n-i):
+            if lista[j] < lista[j+1]:
+                lista[j], lista[j+1] = lista[j+1], lista[j]
+    return lista
+
+def insertionSort(lista):
+    n = len(lista)
+
+    for i in range(1, n):
+        val = lista[i]
+        j = i
+
+        while j > 0 and lista[j-1] > val:
+            lista[j] = lista[j-1]
+            j -= 1
+
+        lista[j] = val
+    return lista

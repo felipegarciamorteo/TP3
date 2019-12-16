@@ -69,10 +69,6 @@ class Grafo():
         return self.vertices.keys()
 
     def adyacentes(self,vertice,peso = None):
-        """ady = []
-        for i in self.vertices[vertice].keys:
-            ady.append(i)
-        return ady """
         if peso != None: return self.vertices[vertice]['ady'].items()
         return self.vertices[vertice]['ady'].keys()
 
