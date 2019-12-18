@@ -1,7 +1,7 @@
 import random
 
 no_dirigido = 1
-
+dirigido = 0
 class Grafo():
     def __init__(self,tipo = no_dirigido,vertices = None,aristas = None):
         self.vertices = {}
@@ -72,6 +72,7 @@ class Grafo():
         if peso != None: return self.vertices[vertice]['ady'].items()
         return self.vertices[vertice]['ady'].keys()
 
+    
     def iterar(self):
         #Puede que no vaya aca, nose.
         return
