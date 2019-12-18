@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 #encoding: utf-8(para las ñ)
+import string
 import sys
 from grafo import Grafo
 import biblioteca_grafo
@@ -17,7 +18,7 @@ ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
 def imprimir_resultado(res):
     resultado = res.pop(len(res)-1)
     while len(res) > 0:
-        resultado += "->" + res.pop(len(res)-1)
+        resultado += " -> " + res.pop(len(res)-1)
     print(resultado)
 
 
@@ -41,10 +42,10 @@ def camino_mas(parametros,flycombi):
 
     
     anterior = camino_final[dest_final]
-    resultado = anterior+"->"+dest_final
+    resultado = anterior+" -> "+dest_final
     while anterior not in ciudades[parametros[1]]:
         anterior = camino_final[anterior]
-        resultado = anterior+"->"+resultado
+        resultado = anterior+" -> "+resultado
         
         
         
@@ -77,10 +78,10 @@ def camino_escalas(parametros,flycombi):
 
     
     anterior = camino_final[aerop_final]
-    resultado = anterior+"->"+ str(aerop_final)
+    resultado = anterior+" -> "+ str(aerop_final)
     while camino_final[anterior] != None:
         anterior = camino_final[anterior]
-        resultado = str(anterior)+"->"+resultado
+        resultado = str(anterior)+" -> "+resultado
     
     print(resultado)
     return True
@@ -251,8 +252,8 @@ def itinerario(parametros,flycombi):
                 restriccion.append([linea[0],linea[1],1])
     grafo_itinerario = Grafo(dirigido,a_visitar,restriccion)
     ordenados = biblioteca_grafo.orden_topologico(grafo_itinerario)
-    flecha= '->'
-    print(flecha.join(ordenados))
+    coma = ', '
+    print(coma.join(ordenados))
     for i in range(len(ordenados)-1):
         parametros = [ordenados[i],ordenados[i+1]]
         camino_escalas(parametros,flycombi)
@@ -268,15 +269,16 @@ def identificar_operacion(comando,flycombi):
         parametros = comando[1].split(",")
     elif comando[0] != "listar_operaciones": return False
 
-    print(comando[0])
+    #print(comando[0])
     if comando[0] == "listar_operaciones":
         print("camino_mas")
         print("camino_escalas")
         #print("recorrer_mundo")
         print("centralidad")
         print("vacaciones")
+        print("itinerario")
     elif comando[0] == "camino_mas":
-        print("entro a identificar")
+        #print("entro a identificar")
         if not camino_mas(parametros,flycombi): return False
     elif comando[0] == "camino_escalas":
         if not camino_escalas(parametros,flycombi): return False
@@ -299,7 +301,7 @@ def identificar_operacion(comando,flycombi):
     elif comando[0] == "exportar_kml":
         if not exportar_kml(parametros,flycombi): return False
     else: 
-        print("esta en el else")
+        #print("esta en el else")
         return False
     return True
 
@@ -348,13 +350,27 @@ def main():
     '''for comando in fileinput.input():
         comandos = linea'''
 
-    operacion = input()
+    for operacion in sys.stdin:
+        if operacion[-1] == '\n':
+            operacion = operacion[:-1]
+        comando = operacion.split(" ",1)
+        if not identificar_operacion(comando,flycombi):
+            print("Error en comando",comando[0])
+    
+    '''operacion = input()
+    try:        
+        comando = operacion.split(" ",1)
+        if not identificar_operacion(comando,flycombi):
+            print("Error en comando",comando[0])
+    except operacion as EOFError:
+        pass'''
+    '''operacion = input()
     #comando = readline
     while operacion and operacion != "exit" :#mientras siga habiendo lineas para procesar
         comando = operacion.split(" ",1)
         if not identificar_operacion(comando,flycombi):
             print("Error en comando",comando[0])
-        operacion = input()
+        operacion = input()'''
     
 
 
@@ -372,4 +388,3 @@ def main():
 
 
 main()
-
