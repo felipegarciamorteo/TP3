@@ -106,7 +106,32 @@ def dfs(grafo):
             dfs_recursivo(grafo,v,visitados,padre,orden)
     return padre,orden
 
+#--------------------TOPOLOGICO------------------
+def orden_topologico(grafo):
+    grado = {}
+    for v in grafo.vertices:
+        grado[v] = 0
+    for v in grafo.vertices:
+        for w in grafo.adyacentes(v):
+            grado[w] +=1
+    cola = deque([])
+    for v in grafo.vertices:
+        if grado[v] == 0:
+            cola.append(v)
+    resul = []
+    while not len(cola) == 0:
+        v = cola.popleft()
+        resul.append(v)
+        for w in grafo.adyacentes(v):
+            grado[w] -= 1
+            if grado[w] == 0:
+                cola.append(w)
+    if len(resul) == len(grafo.vertices):
+        return resul
+    else:
+        return None
 
+        
 #-------------------CENTRALIDAD-------------------
 
 def centralidad(grafo):
@@ -233,6 +258,29 @@ def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
     del orden[v]
     vis.remove[v]
     
+
+#--------------ALGORITMO TOP K-----------------------
+
+def top_k(datos,n,k):
+    heap = []
+    res = []
+    cont = 0
+    for clave,valor in datos.items():
+        if cont < k:
+            heapq.heappush(heap,(clave,valor))
+            cont += 1
+        else: 
+            #tope = heapq.nsmallest(1,heap)
+            if valor > ((heap[0])[1]):
+                heapq.heappop(heap)
+                heapq.heappush(heap,(clave,valor))
+                cont += 1
+    while len(heap) > 0:
+        res.append((heapq.heappop(heap)[0]))
+    print(res)
+    return res
+
+
 
 #----------- ORDENAMIENTOS COMPARATIVOS----------------
 

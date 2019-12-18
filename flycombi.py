@@ -9,6 +9,7 @@ import fileinput
 import operator
 
 no_dirigido = 1
+dirigido = 0
 ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
 '''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
 
@@ -68,7 +69,7 @@ def camino_escalas(parametros,flycombi):
             padre, orden = biblioteca_grafo.bfs(flycombi,aerop)
             for aerop1 in ciudades[parametros[1]]:
                 if orden[aerop1] < min:
-                    min = orden
+                    min = orden[aerop1]
                     camino_final = padre
                     aerop_final = aerop1
     if min == float('inf'): return False
@@ -108,6 +109,8 @@ def centralidad(parametros,flycombi):
             if w == v: continue
             cent[w] += cent_aux[w]
     
+    #imprimir_resultado(biblioteca_grafo.top_k(cent,len(cent),int(parametros[0])))
+
     res = sorted(cent.items(),key=operator.itemgetter(1))
     resultado = (res.pop()[0])
     for i in range(1,int(parametros[0])):
@@ -232,7 +235,27 @@ def vacaciones(parametros,flycombi):
     return False
 
 def itinerario(parametros,flycombi):
-    return 
+    if len(parametros) != 1 : return False 
+    with open (parametros[0],'r') as itinerario_actual:
+        reader = csv.reader(itinerario_actual,delimiter=',')
+        prim = True
+        a_visitar = []
+        restriccion = []
+        for linea in reader:
+            if prim == True:
+                prim = False
+                for ciudad in linea:
+                    a_visitar.append(ciudad)
+            else:
+                restriccion.append([linea[0],linea[1],1])
+    grafo_itinerario = Grafo(dirigido,a_visitar,restriccion)
+    ordenados = biblioteca_grafo.orden_topologico(grafo_itinerario)
+    flecha= '->'
+    print(flecha.join(ordenados))
+    for i in range(len(ordenados)-1):
+        parametros = [ordenados[i],ordenados[i+1]]
+        camino_escalas(parametros,flycombi)
+    return True
 
 def exportar_kml(parametros,flycombi):
     return
