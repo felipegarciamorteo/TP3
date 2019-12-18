@@ -106,6 +106,30 @@ def dfs(grafo):
             dfs_recursivo(grafo,v,visitados,padre,orden)
     return padre,orden
 
+#--------------------TOPOLOGICO------------------
+def orden_topologico(grafo):
+    grado = {}
+    for v in grafo.vertices:
+        grado[v] = 0
+    for v in grafo.vertices:
+        for w in grafo.adyacentes(v):
+            grado[w] +=1
+    cola = deque([])
+    for v in grafo.vertices:
+        if grado[v] == 0:
+            cola.append(v)
+    resul = []
+    while not len(cola) == 0:
+        v = cola.popleft()
+        resul.append(v)
+        for w in grafo.adyacentes(v):
+            grado[w] -= 1
+            if grado[w] == 0:
+                cola.append(w)
+    if len(resul) == len(grafo.vertices):
+        return resul
+    else:
+        return None
 
 #-------------------CENTRALIDAD-------------------
 
