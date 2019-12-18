@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #encoding: utf-8(para las ñ)
 import sys
 from grafo import Grafo
@@ -18,6 +19,7 @@ def imprimir_resultado(res):
     while len(res) > 0:
         resultado += "->" + res.pop(len(res)-1)
     print(resultado)
+
 
 def camino_mas(parametros,flycombi):
     if len(parametros) != 3 or parametros[1] not in ciudades or parametros[2] not in ciudades: return False 
@@ -84,6 +86,7 @@ def camino_escalas(parametros,flycombi):
     return True
     #return
 
+
 def centralidad(parametros,flycombi):
     if len(parametros) != 1 or not parametros[0].isnumeric() or int(parametros[0]) <= 0 or int(parametros[0]) > len(flycombi.vertices) : return False
     
@@ -107,6 +110,8 @@ def centralidad(parametros,flycombi):
             if w == v: continue
             cent[w] += cent_aux[w]
     
+    #imprimir_resultado(biblioteca_grafo.top_k(cent,len(cent),int(parametros[0])))
+
     res = sorted(cent.items(),key=operator.itemgetter(1))
     resultado = (res.pop()[0])
     for i in range(1,int(parametros[0])):
@@ -117,6 +122,7 @@ def centralidad(parametros,flycombi):
 
     return True
 
+
 def centralidad_aprox(parametros,flycombi):
     return 
 
@@ -125,6 +131,8 @@ def pagerank(parametros,flycombi):
 
 def nueva_aerolinea(parametros,flycombi):
     return 
+
+
 
 def viaje_valido(viaje,flycombi,visitados):
     estuvo = False
@@ -250,11 +258,7 @@ def itinerario(parametros,flycombi):
         camino_escalas(parametros,flycombi)
     return True
 
-
-
-
 def exportar_kml(parametros,flycombi):
-
     return
 
 
@@ -263,7 +267,7 @@ def identificar_operacion(comando,flycombi):
     if len(comando) > 1:
         parametros = comando[1].split(",")
     elif comando[0] != "listar_operaciones": return False
-        
+
     print(comando[0])
     if comando[0] == "listar_operaciones":
         print("camino_mas")
@@ -368,3 +372,4 @@ def main():
 
 
 main()
+
