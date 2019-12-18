@@ -131,6 +131,7 @@ def orden_topologico(grafo):
     else:
         return None
 
+        
 #-------------------CENTRALIDAD-------------------
 
 def centralidad(grafo):
@@ -257,6 +258,29 @@ def n_recursivo(grafo, v, vis, padre, orden, cont, n, origen):
     del orden[v]
     vis.remove[v]
     
+
+#--------------ALGORITMO TOP K-----------------------
+
+def top_k(datos,n,k):
+    heap = []
+    res = []
+    cont = 0
+    for clave,valor in datos.items():
+        if cont < k:
+            heapq.heappush(heap,(clave,valor))
+            cont += 1
+        else: 
+            #tope = heapq.nsmallest(1,heap)
+            if valor > ((heap[0])[1]):
+                heapq.heappop(heap)
+                heapq.heappush(heap,(clave,valor))
+                cont += 1
+    while len(heap) > 0:
+        res.append((heapq.heappop(heap)[0]))
+    print(res)
+    return res
+
+
 
 #----------- ORDENAMIENTOS COMPARATIVOS----------------
 
