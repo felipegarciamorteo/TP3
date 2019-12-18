@@ -9,6 +9,7 @@ import fileinput
 import operator
 
 no_dirigido = 1
+dirigido = 0
 ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
 '''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
 
@@ -17,7 +18,6 @@ def imprimir_resultado(res):
     while len(res) > 0:
         resultado += "->" + res.pop(len(res)-1)
     print(resultado)
-
 
 def camino_mas(parametros,flycombi):
     if len(parametros) != 3 or parametros[1] not in ciudades or parametros[2] not in ciudades: return False 
@@ -68,7 +68,7 @@ def camino_escalas(parametros,flycombi):
             padre, orden = biblioteca_grafo.bfs(flycombi,aerop)
             for aerop1 in ciudades[parametros[1]]:
                 if orden[aerop1] < min:
-                    min = orden
+                    min = orden[aerop1]
                     camino_final = padre
                     aerop_final = aerop1
     if min == float('inf'): return False
@@ -83,7 +83,6 @@ def camino_escalas(parametros,flycombi):
     print(resultado)
     return True
     #return
-
 
 def centralidad(parametros,flycombi):
     if len(parametros) != 1 or not parametros[0].isnumeric() or int(parametros[0]) <= 0 or int(parametros[0]) > len(flycombi.vertices) : return False
@@ -118,7 +117,6 @@ def centralidad(parametros,flycombi):
 
     return True
 
-
 def centralidad_aprox(parametros,flycombi):
     return 
 
@@ -127,8 +125,6 @@ def pagerank(parametros,flycombi):
 
 def nueva_aerolinea(parametros,flycombi):
     return 
-
-
 
 def viaje_valido(viaje,flycombi,visitados):
     estuvo = False
@@ -232,9 +228,33 @@ def vacaciones(parametros,flycombi):
     return False
 
 def itinerario(parametros,flycombi):
-    return 
+    if len(parametros) != 1 : return False 
+    with open (parametros[0],'r') as itinerario_actual:
+        reader = csv.reader(itinerario_actual,delimiter=',')
+        prim = True
+        a_visitar = []
+        restriccion = []
+        for linea in reader:
+            if prim == True:
+                prim = False
+                for ciudad in linea:
+                    a_visitar.append(ciudad)
+            else:
+                restriccion.append([linea[0],linea[1],1])
+    grafo_itinerario = Grafo(dirigido,a_visitar,restriccion)
+    ordenados = biblioteca_grafo.orden_topologico(grafo_itinerario)
+    flecha= '->'
+    print(flecha.join(ordenados))
+    for i in range(len(ordenados)-1):
+        parametros = [ordenados[i],ordenados[i+1]]
+        camino_escalas(parametros,flycombi)
+    return True
+
+
+
 
 def exportar_kml(parametros,flycombi):
+
     return
 
 
@@ -243,7 +263,7 @@ def identificar_operacion(comando,flycombi):
     if len(comando) > 1:
         parametros = comando[1].split(",")
     elif comando[0] != "listar_operaciones": return False
-
+        
     print(comando[0])
     if comando[0] == "listar_operaciones":
         print("camino_mas")
