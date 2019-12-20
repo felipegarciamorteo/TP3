@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-#encoding: utf-8(para las ñ)
 import string
 import sys
 from grafo import Grafo
@@ -7,20 +6,27 @@ import biblioteca_grafo
 import heapq
 import csv
 from collections import deque
-import fileinput
 import operator
 
 no_dirigido = 1
 dirigido = 0
 ciudades = {}#creo un diccionario para saber los aeropuertos de cada ciudad
-'''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
+flecha = " -> "
+coma = ", "
 
-def imprimir_resultado(res):
+def imprimir_resultado(res,sep):
     resultado = res.pop(len(res)-1)
     while len(res) > 0:
-        resultado += " -> " + res.pop(len(res)-1)
+        resultado += flecha + res.pop(len(res)-1)
     print(resultado)
 
+def imprimir_parar_atras(camino,destino):
+    anterior = camino[destino]
+    resultado = anterior + flecha + destino
+    while camino[anterior] is not None:
+        anterior = camino[anterior]
+        resultado = anterior + flecha + resultado
+    print(resultado)
 
 def camino_mas(parametros,flycombi):
     if len(parametros) != 3 or parametros[1] not in ciudades or parametros[2] not in ciudades: return False 
@@ -37,31 +43,9 @@ def camino_mas(parametros,flycombi):
                 min = costo
                 camino_final = camino
                 dest_final = dest
-            #res = deque([parametros[2]])
     if not dest: return False
 
-    
-    anterior = camino_final[dest_final]
-    resultado = anterior+" -> "+dest_final
-    while anterior not in ciudades[parametros[1]]:
-        anterior = camino_final[anterior]
-        resultado = anterior+" -> "+resultado
-        
-        
-        
-    '''res = [dest_final]
-    anterior = camino_final[dest_final]
-    res.append(anterior)
-    while anterior not in ciudades[parametros[1]]:
-        anterior = camino_final[anterior]
-        res.append(anterior)
-    
-    clave = res.pop(len(res)-1)
-
-    while len(res) > 0:
-        clave += "->" + res.pop(len(res)-1)
-    print (clave)'''
-    print(resultado)
+    imprimir_parar_atras(camino_final,dest_final)
     return True
 
 def camino_escalas(parametros,flycombi):
@@ -76,17 +60,8 @@ def camino_escalas(parametros,flycombi):
                     aerop_final = aerop1
     if min == float('inf'): return False
 
-    
-    anterior = camino_final[aerop_final]
-    resultado = anterior+" -> "+ str(aerop_final)
-    while camino_final[anterior] != None:
-        anterior = camino_final[anterior]
-        resultado = str(anterior)+" -> "+resultado
-    
-    print(resultado)
+    imprimir_parar_atras(camino_final,aerop_final)
     return True
-    #return
-
 
 def centralidad(parametros,flycombi):
     if len(parametros) != 1 or not parametros[0].isnumeric() or int(parametros[0]) <= 0 or int(parametros[0]) > len(flycombi.vertices) : return False
@@ -94,33 +69,24 @@ def centralidad(parametros,flycombi):
     cent = {}
     for v in flycombi.vertices: cent[v] = 0
     for v in flycombi.vertices:
-        # hacia todos los demas vertices
         padre, distancia = biblioteca_grafo.dijkstra_flycombi(flycombi,v,None,"frecuencia",ciudades)
         cent_aux = {}
         for w in flycombi.vertices: cent_aux[w] = 0
-        # Aca filtramos (de ser necesario) los vertices a distancia infinita, 
-        # y ordenamos de mayor a menor
         
-        vertices_ordenados = sorted(distancia.items(),key=operator.itemgetter(1),reverse = True)# biblioteca_grafo.bubbleSort(flycombi, distancias) 
+        vertices_ordenados = sorted(distancia.items(),key=operator.itemgetter(1),reverse = True)
         for w in vertices_ordenados:
             if w == float('inf') or padre[w[0]] is None: continue
             cent_aux[padre[w[0]]] += 1 + cent_aux[w[0]]
-        # le sumamos 1 a la centralidad de todos los vertices que se encuentren en 
-        # el medio del camino
         for w in flycombi.vertices:
             if w == v: continue
             cent[w] += cent_aux[w]
-    
-    #imprimir_resultado(biblioteca_grafo.top_k(cent,len(cent),int(parametros[0])))
 
     res = sorted(cent.items(),key=operator.itemgetter(1))
     resultado = (res.pop()[0])
     for i in range(1,int(parametros[0])):
         desencolado = res.pop()
-        resultado += ", "+desencolado[0]
+        resultado += coma + desencolado[0]
     print(resultado)
-    #imprimir_resultado(resultado)
-
     return True
 
 
@@ -131,7 +97,19 @@ def pagerank(parametros,flycombi):
     return
 
 def nueva_aerolinea(parametros,flycombi):
-    return 
+    if len(parametros) != 1 : return False 
+    rutas = biblioteca_grafo.prim_flycombi(flycombi,"precio")
+    visitados = set()
+    with open (parametros[0],'w') as aerolinea:
+        f_writer = csv.writer(aerolinea)
+        for v in rutas[0].vertices:
+            for a in rutas[0].adyacentes(v):
+                if (a,v) in visitados: continue
+                visitados.add((v,a))
+                p = rutas[0].peso(v,a)
+                f_writer.writerow([v,a,p.tiempo,p.precio,p.cantidad])
+    print("OK")
+    return True
 
 
 
@@ -166,27 +144,33 @@ def viaje_valido(viaje,flycombi,visitados):
         #print(flycombi.dato(w,'ciudad'))
     return res,costo'''
 
-def recorrer_mundo_bt(v,flycombi,visitados,camino_act,costo):
+def recorrer_mundo_bt(v,flycombi,visitados,camino_act,costo,estaba):
     #print (len(ciudades),len(visitados))
+    
     visitados.add(v)
     if len(ciudades) == len(visitados):
         #print("entro")
         if viaje_valido(camino_act,flycombi,visitados):
-            #print("es valido")
+            #print("es valido")rec
             return res,costo 
-        else: 
-            visitados.remove()
+        else:
+            if not estaba:   
+                visitados.remove(v)
             return None
     for w in flycombi.adyacentes(v):
         #if flycombi.dato(w,'ciudad') in visitados: continue
-        costo += int(flycombi.peso(v,w).tiempo)
+        #costo += int(flycombi.peso(v,w).tiempo)
         #print(w)
         #print(res)
-        res,costo = recorrer_mundo_bt(w,flycombi,visitados,camino_act+[w],costo)
+        if w in visitados:
+            res,costo = recorrer_mundo_bt(w,flycombi,visitados,camino_act+[w],costo+int(flycombi.peso(v,w).tiempo),True)
+        else:
+            res,costo = recorrer_mundo_bt(w,flycombi,visitados,camino_act+[w],costo+int(flycombi.peso(v,w).tiempo),False)
         if res is not None:
             return res,costo
         #print(flycombi.dato(w,'ciudad'))
-    visitados.remove()
+    if not estaba:
+        visitados.remove(w)
     return None
 
 def es_conexo(grafo):
@@ -208,7 +192,7 @@ def recorrer_mundo(parametros,flycombi):#back_tracking
     #while len(visitados) != len(ciudades):
     resultado = None
     for origen in ciudades[parametros[0]]:
-        recorrido,tardo = recorrer_mundo_bt(origen,flycombi,set(),[v],0)
+        recorrido,tardo = biblioteca_grafo.prim_flycombi(flycombi,origen)
         if min > tardo:
             min = tardo
             resultado = recorrido
@@ -217,8 +201,11 @@ def recorrer_mundo(parametros,flycombi):#back_tracking
     while len(res) > 0:
         resultado += "->" + res.pop(len(res)-1)'''
     
-    imprimir_resultado(res)
-    '''print(resultado)'''
+    #imprimir_resultado(res)
+    for i in resultado.vertices:
+        print("ciudad:",i)
+        for j in resultado.adyacentes(i):
+            print("ady:",j)
     print(tardo)
     return True
 
@@ -231,10 +218,10 @@ def vacaciones(parametros,flycombi):
     for origen in ciudades[parametros[0]]:
         resultado = biblioteca_grafo.ciclo_n(flycombi,origen,origen,int(parametros[1]),set(),[origen])
         if resultado is not None:
-            imprimir_resultado(resultado+[origen])
+            print(flecha.join(resultado+[origen]))
             return True
-
-    return False
+    print("No se encontro recorrido")
+    return True
 
 def itinerario(parametros,flycombi):
     if len(parametros) != 1 : return False 
@@ -252,7 +239,6 @@ def itinerario(parametros,flycombi):
                 restriccion.append([linea[0],linea[1],1])
     grafo_itinerario = Grafo(dirigido,a_visitar,restriccion)
     ordenados = biblioteca_grafo.orden_topologico(grafo_itinerario)
-    coma = ', '
     print(coma.join(ordenados))
     for i in range(len(ordenados)-1):
         parametros = [ordenados[i],ordenados[i+1]]
@@ -269,16 +255,15 @@ def identificar_operacion(comando,flycombi):
         parametros = comando[1].split(",")
     elif comando[0] != "listar_operaciones": return False
 
-    #print(comando[0])
     if comando[0] == "listar_operaciones":
         print("camino_mas")
         print("camino_escalas")
-        #print("recorrer_mundo")
         print("centralidad")
+        print("nueva_aerolinea")
+        #print("recorrer_mundo")
         print("vacaciones")
         print("itinerario")
     elif comando[0] == "camino_mas":
-        #print("entro a identificar")
         if not camino_mas(parametros,flycombi): return False
     elif comando[0] == "camino_escalas":
         if not camino_escalas(parametros,flycombi): return False
@@ -301,7 +286,6 @@ def identificar_operacion(comando,flycombi):
     elif comando[0] == "exportar_kml":
         if not exportar_kml(parametros,flycombi): return False
     else: 
-        #print("esta en el else")
         return False
     return True
 
@@ -314,19 +298,15 @@ def main():
         return
 
     flycombi = Grafo(no_dirigido)
-    '''vertices = []
-    aristas = []'''
 
     with open(sys.argv[1],'r') as aeropuertos:
         reader = csv.reader(aeropuertos,delimiter=',')
         for linea in reader:
-            #clave = linea[1]+","+linea[0]
-            if linea[0] in ciudades:#ciudades.__contains__(linea[0]):
+            if linea[0] in ciudades:
                 ciudades[linea[0]].append(linea[1])
             else:
                 ciudades[linea[0]] = [linea[1]]
             #vertices.append(linea[1])#guardo solo los aeropuertos
-            #vertices.append(linea[1])
             flycombi.agregar_vertice(linea[1])
             flycombi.agregar_dato(linea[1],'ciudad',linea[0]) 
 
@@ -336,19 +316,6 @@ def main():
             peso = biblioteca_grafo.Peso(linea[2],linea[3],linea[4])
             #aristas.append((linea[0],linea[1],peso))
             flycombi.agregar_arista(linea[0],linea[1],peso)
-        '''for linea in vuelos: 
-            vue = linea.split(',')
-            peso = biblioteca_grafo.Peso(vue[2],vue[3],vue[4])
-            aristas.append((vue[0],vue[1],peso))'''
-
-    #flycombi = Grafo(no_dirigido,vertices,aristas)
-
-    '''for i in ciudades:
-        for j in ciudades[i]:
-            flycombi.agregar_dato(j,'ciudad',i)'''
-
-    '''for comando in fileinput.input():
-        comandos = linea'''
 
     for operacion in sys.stdin:
         if operacion[-1] == '\n':
@@ -356,34 +323,6 @@ def main():
         comando = operacion.split(" ",1)
         if not identificar_operacion(comando,flycombi):
             print("Error en comando",comando[0])
-    
-    '''operacion = input()
-    try:        
-        comando = operacion.split(" ",1)
-        if not identificar_operacion(comando,flycombi):
-            print("Error en comando",comando[0])
-    except operacion as EOFError:
-        pass'''
-    '''operacion = input()
-    #comando = readline
-    while operacion and operacion != "exit" :#mientras siga habiendo lineas para procesar
-        comando = operacion.split(" ",1)
-        if not identificar_operacion(comando,flycombi):
-            print("Error en comando",comando[0])
-        operacion = input()'''
-    
-
-
-    ''' datos = input()
-    archivos = datos.split(" ")
-    print(datos)'''
-
-    '''for s in archivos:
-        print (s,len(s))
-
-
-    for linea in fileinput.input():
-        comandos = linea'''
     return
 
 

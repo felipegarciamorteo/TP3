@@ -1,9 +1,6 @@
-#encoding: utf-8(para las ñ)
 from grafo import Grafo
 import heapq
 from collections import deque
-
-'''TENER CUIDADO CON LAS VARIABLES QUE SE REPITEN, NO PASA NADA?'''
 
 #-----CLASE PARA DIFERENCIAR EL PESO DE LAS ARISTAS DEL GRAFO SEGÚN LA OPERACIÓN------
 
@@ -17,7 +14,7 @@ class Peso():
 #-----------------CAMINOS MÍNIMOS---------------------
 
 #camino_mas
-def dijkstra(grafo,origen): 
+'''def dijkstra(grafo,origen): 
     padre = {}
     dist = {}
     for i in grafo.vertices:
@@ -34,6 +31,7 @@ def dijkstra(grafo,origen):
                 padre[w] = v
                 heapq.heappush(heap,(dist[w],w))
     return padre,dist
+    BORRAR'''
 
 def dijkstra_flycombi(grafo,origen,destino,tipo,ciudades):
     padre = {}
@@ -51,14 +49,12 @@ def dijkstra_flycombi(grafo,origen,destino,tipo,ciudades):
             if v in ciudades[destino]:
                 return v,padre,dist[v]
         for w in grafo.adyacentes(v):
-            #print("ciudad:",w)
             if tipo == "tiempo":
                 p = int(grafo.peso(v,w).tiempo)
             elif tipo == "precio":
                 p =  int(grafo.peso(v,w).precio)
             elif tipo == "frecuencia":
-                p = 1/int(grafo.peso(v,w).cantidad) 
-            #print(distv,"de ")
+                p = 1/int(grafo.peso(v,w).cantidad)
             if dist[v] + p < dist[w]:
                 dist[w] = dist[v] + p
                 padre[w] = v
@@ -138,17 +134,12 @@ def centralidad(grafo):
     cent = {}
     for v in grafo: cent[v] = 0
     for v in grafo:
-        # hacia todos los demas vertices
         distancia, padre = dijkstra(grafo, v)
         cent_aux = {}
         for w in grafo: cent_aux[w] = 0
-        # Aca filtramos (de ser necesario) los vertices a distancia infinita, 
-        # y ordenamos de mayor a menor
         vertices_ordenados = ordenar_vertices(grafo, distancias) 
         for w in vertices_ordenados:
             cent_aux[padre[w]] += 1 + cent_aux[w]
-        # le sumamos 1 a la centralidad de todos los vertices que se encuentren en 
-        # el medio del camino
         for w in grafo:
             if w == v: continue
             cent[w] += cent_aux[w]
@@ -179,19 +170,19 @@ def prim(grafo):
     visitados.add(vertice)
     heap = []
     for w in grafo.adyacentes(vertice):
-        heapq.heappush(heap,(vertice,w,grafo.peso(vertice,w)))
-    arbol = grafo()
+        heapq.heappush(heap,((grafo.peso(vertice,w)),vertice,w))
+    arbol = Grafo()
     while len(heap) > 0:
-        v,w,p = heapq.heappop(heap)
+        p,v,w = heapq.heappop(heap)
         if w in visitados: continue
         arbol.agregar_arista(v,w,p)
         visitados.add(w)
         for x in grafo.adyacentes(w):
             if x not in visitados:
-                heapq.heappush(heap,(w,x,grafo.peso(w,x)))
+                heapq.heappush(heap,(grafo.peso(w,x)))
     return arbol
 
-def prim_flycombi(grafo,vertice = None):
+def prim_flycombi(grafo,peso,vertice = None):
     if vertice == None:
         vertice = grafo.vertice_random()
     costo = 0
@@ -199,17 +190,25 @@ def prim_flycombi(grafo,vertice = None):
     visitados.add(vertice)
     heap = []
     for w in grafo.adyacentes(vertice):
-        heapq.heappush(heap,(vertice,w,grafo.peso(vertice,w).tiempo))
-    arbol = vertice
+        arista = grafo.peso(vertice,w)
+        if peso == "tiempo":
+            heapq.heappush(heap,(int(arista.tiempo),vertice,w,arista))
+        elif peso == "precio":
+            heapq.heappush(heap,(int(arista.precio),vertice,w,arista))
+    arbol = Grafo()
     while len(heap) > 0:
-        v,w,p = heapq.heappop(heap)
+        p,v,w,a = heapq.heappop(heap)
         if w in visitados: continue
-        arbol += "->"+w
+        arbol.agregar_arista(v,w,a)
         costo += int(p)
         visitados.add(w)
         for x in grafo.adyacentes(w):
             if x not in visitados:
-                heapq.heappush(heap,(w,x,grafo.peso(w,x).tiempo))
+                arista = grafo.peso(w,x)
+                if peso == "tiempo":
+                    heapq.heappush(heap,(int(arista.tiempo),w,x,arista))
+                elif peso == "precio":
+                    heapq.heappush(heap,(int(arista.precio),w,x,arista))
     return arbol,costo
 
 def kruskal(grafo):
@@ -281,7 +280,7 @@ def top_k(datos,n,k):
     return res
 
 
-
+'''
 #----------- ORDENAMIENTOS COMPARATIVOS----------------
 
 # -*- coding: utf-8 -*-
@@ -348,3 +347,4 @@ def insertionSort(lista):
 
         lista[j] = val
     return lista
+    BORRAR'''
