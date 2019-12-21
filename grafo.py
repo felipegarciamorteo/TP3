@@ -68,7 +68,3 @@ class Grafo():
     def adyacentes(self,vertice,peso = None):
         if peso != None: return self.vertices[vertice]['ady'].items()
         return self.vertices[vertice]['ady'].keys()
-
-    def iterar(self):
-        #Puede que no vaya aca, nose.
-        return
